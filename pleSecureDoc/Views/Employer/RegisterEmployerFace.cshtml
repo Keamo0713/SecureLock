@@ -1,0 +1,31 @@
+﻿@{
+    ViewData["Title"] = "Register Employer Face";
+}
+
+<h2>Register Your Face</h2>
+<video id="video" width="320" height="240" autoplay></video>
+<br />
+<button id="capture">Capture</button>
+<canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
+<form id="faceForm" method="post" asp-action="RegisterEmployerFaceConfirm">
+    <input type="hidden" name="base64Image" id="base64Image" />
+</form>
+
+<script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const captureBtn = document.getElementById('capture');
+    const base64ImageInput = document.getElementById('base64Image');
+    const form = document.getElementById('faceForm');
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => video.srcObject = stream)
+        .catch(err => console.error('Camera error:', err));
+
+    captureBtn.addEventListener('click', () => {
+        canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL('image/jpeg');
+        base64ImageInput.value = dataUrl.split(',')[1];
+        form.submit();
+    });
+</script>

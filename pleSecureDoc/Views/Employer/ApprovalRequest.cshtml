@@ -1,0 +1,29 @@
+﻿@model pleSecureDoc.Models.DocumentRequest
+@{
+    ViewData["Title"] = "Approval Request";
+}
+
+<h2>Approve Document Request</h2>
+
+@if (Model != null)
+{
+    <form asp-action="ConfirmApproval" method="post">
+        <input type="hidden" asp-for="RequestId" />
+
+        <div class="mb-3">
+            <label class="form-label">Document Name:</label>
+            <span class="form-control-plaintext">@Model.DocumentName</span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Requested By:</label>
+            <span class="form-control-plaintext">@Model.EmployeeId</span>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Approve</button>
+    </form>
+}
+else
+{
+    <div class="alert alert-warning">Invalid approval request.</div>
+}

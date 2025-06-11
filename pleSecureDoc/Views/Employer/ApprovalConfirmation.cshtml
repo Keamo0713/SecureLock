@@ -1,0 +1,21 @@
+﻿@model pleSecureDoc.Models.DocumentRequest
+
+@{
+    ViewBag.Title = "Approval Confirmation";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Approval Confirmation</h2>
+
+<div class="alert alert-success">
+    <strong>Success!</strong> You have approved the document request.
+</div>
+
+<div class="card p-3 my-3">
+    <p><strong>Document Name:</strong> @Model.DocumentName</p>
+    <p><strong>Requested By (Employee ID):</strong> @Model.EmployeeId</p>
+    <p><strong>Request Time:</strong> @Model.RequestTime.ToString("f")</p>
+    <p><strong>Approval Time:</strong> @Model.ApprovalTime?.ToString("f")</p>
+</div>
+
+<a class="btn btn-primary" href="@Url.Action("ApprovalRequest", "Employer")">Back to Requests</a>

@@ -1,0 +1,37 @@
+﻿<form id="faceForm" asp-controller="Face" asp-action="Confirm" asp-route-requestId="@Model.RequestId" method="post" enctype="multipart/form-data">
+    <video id="video" width="320" height="240" autoplay></video>
+    <canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
+
+    <input type="file" name="faceImage" id="faceImageInput" style="display: none;" />
+    <br />
+    <button type="button" onclick="capture()">Capture</button>
+    <button type="submit" id="submitBtn" disabled>Submit</button>
+</form>
+
+<script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const faceImageInput = document.getElementById('faceImageInput');
+    const submitBtn = document.getElementById('submitBtn');
+
+    // Start webcam
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => video.srcObject = stream)
+        .catch(err => console.error("Webcam error:", err));
+
+    function capture() {
+        // Draw the video frame to the canvas
+        const context = canvas.getContext('2d');
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        // Convert canvas to blob and set it in file input
+        canvas.toBlob(blob => {
+            const file = new File([blob], "face.jpg", { type: "image/jpeg" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            faceImageInput.files = dataTransfer.files;
+            submitBtn.disabled = false;
+            alert("Image captured! Now click Submit.");
+        }, 'image/jpeg');
+    }
+</script>

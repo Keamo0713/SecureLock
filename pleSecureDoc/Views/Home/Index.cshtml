@@ -1,0 +1,12 @@
+﻿@{
+    ViewBag.Title = "Welcome";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Welcome to pleSecureDoc</h2>
+
+<p>
+    A secure document request and approval system with face recognition verification.
+</p>
+
+<a class="btn btn-primary mt-3" href="@Url.Action("RequestDocument", "Employee")">Request a Document</a>

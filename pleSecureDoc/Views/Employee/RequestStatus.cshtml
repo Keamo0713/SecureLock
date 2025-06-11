@@ -1,0 +1,50 @@
+﻿@model pleSecureDoc.Models.DocumentRequest
+@{
+    ViewData["Title"] = "Request Status";
+}
+
+<h2>Request Status</h2>
+
+@if (Model == null)
+{
+    <div class="alert alert-warning">No request found.</div>
+}
+else
+{
+    <table class="table table-bordered">
+        <tr>
+            <th>Document Name</th>
+            <td>@Model.DocumentName</td>
+        </tr>
+        <tr>
+            <th>Request Time</th>
+            <td>@Model.RequestTime.ToString("g")</td>
+        </tr>
+        <tr>
+            <th>Approval Status</th>
+            <td>
+                @if (Model.IsApproved)
+                {
+                    <span class="text-success">Approved</span>
+                }
+                else
+                {
+                    <span class="text-warning">Pending</span>
+                }
+            </td>
+        </tr>
+        <tr>
+            <th>Face Confirmation</th>
+            <td>
+                @if (Model.IsFaceConfirmed)
+                {
+                    <span class="text-success">Confirmed</span>
+                }
+                else
+                {
+                    <span class="text-secondary">Not Confirmed</span>
+                }
+            </td>
+        </tr>
+    </table>
+}
