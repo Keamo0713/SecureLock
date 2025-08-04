@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -19,8 +19,8 @@ namespace pleSecureDoc.Services
         {
             _config = config;
             _httpClient = new HttpClient();
-            _httpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", _config["FaceApi:Key"]);
-            _personGroupId = _config["FaceApi:PersonGroupId"];
+            _httpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", _config["FaceApi:Key"] ?? throw new ArgumentNullException("FaceApi:Key is not configured."));
+            _personGroupId = _config["FaceApi:PersonGroupId"] ?? throw new ArgumentNullException("FaceApi:PersonGroupId is not configured.");
         }
 
         public async Task CreatePersonGroupAsync()
@@ -33,7 +33,8 @@ namespace pleSecureDoc.Services
             };
 
             var content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
-            await _httpClient.PutAsync(url, content);
+            var response = await _httpClient.PutAsync(url, content);
+            response.EnsureSuccessStatusCode(); // Throw exception if not successful
         }
 
         public async Task<string> RegisterEmployerFaceAsync(string base64Image, string employerName)
@@ -44,8 +45,15 @@ namespace pleSecureDoc.Services
             var personContent = new StringContent(JsonConvert.SerializeObject(personPayload), Encoding.UTF8, "application/json");
 
             var personRes = await _httpClient.PostAsync(createPersonUrl, personContent);
+            personRes.EnsureSuccessStatusCode();
             var personJson = await personRes.Content.ReadAsStringAsync();
-            var personId = JsonConvert.DeserializeObject<dynamic>(personJson).personId.ToString();
+            dynamic? personResult = JsonConvert.DeserializeObject(personJson);
+            string personId = personResult?.personId?.ToString() ?? string.Empty;
+
+            if (string.IsNullOrEmpty(personId))
+            {
+                throw new InvalidOperationException("Failed to create person: personId is null or empty.");
+            }
 
             // 2. Add Face
             var addFaceUrl = $"{_config["FaceApi:Endpoint"]}/face/v1.0/persongroups/{_personGroupId}/persons/{personId}/persistedFaces";
@@ -53,11 +61,13 @@ namespace pleSecureDoc.Services
             var byteContent = new ByteArrayContent(imageBytes);
             byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
 
-            await _httpClient.PostAsync(addFaceUrl, byteContent);
+            var addFaceRes = await _httpClient.PostAsync(addFaceUrl, byteContent);
+            addFaceRes.EnsureSuccessStatusCode();
 
             // 3. Train Group
             var trainUrl = $"{_config["FaceApi:Endpoint"]}/face/v1.0/persongroups/{_personGroupId}/train";
-            await _httpClient.PostAsync(trainUrl, null);
+            var trainRes = await _httpClient.PostAsync(trainUrl, null);
+            trainRes.EnsureSuccessStatusCode();
 
             return personId;
         }
@@ -71,12 +81,15 @@ namespace pleSecureDoc.Services
             content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
 
             var detectResponse = await _httpClient.PostAsync(detectUrl, content);
+            detectResponse.EnsureSuccessStatusCode();
             var detectJson = await detectResponse.Content.ReadAsStringAsync();
             var faces = JsonConvert.DeserializeObject<List<dynamic>>(detectJson);
 
             if (faces == null || faces.Count == 0) return false;
 
-            string faceId = faces[0].faceId;
+            string? faceId = faces.Count > 0 ? faces[0].faceId?.ToString() : null;
+            if (string.IsNullOrEmpty(faceId)) return false;
+
 
             // 2. Verify face
             var verifyUrl = $"{_config["FaceApi:Endpoint"]}/face/v1.0/verify";
@@ -88,10 +101,11 @@ namespace pleSecureDoc.Services
             };
             var verifyContent = new StringContent(JsonConvert.SerializeObject(verifyPayload), Encoding.UTF8, "application/json");
             var verifyResponse = await _httpClient.PostAsync(verifyUrl, verifyContent);
+            verifyResponse.EnsureSuccessStatusCode();
             var verifyJson = await verifyResponse.Content.ReadAsStringAsync();
-            dynamic verifyResult = JsonConvert.DeserializeObject(verifyJson);
+            dynamic? verifyResult = JsonConvert.DeserializeObject(verifyJson);
 
-            return verifyResult.isIdentical == true && verifyResult.confidence > 0.5;
+            return verifyResult?.isIdentical == true && verifyResult?.confidence > 0.5;
         }
     }
 }
