@@ -26,6 +26,13 @@ SecureLock is a secure document approval system for organizations, built with AS
 - Azure Face API Key & Endpoint
 - Gmail account with "less secure apps" access enabled (or App Password)
 
+<img width="784" height="737" alt="image" src="https://github.com/user-attachments/assets/11f1d2b6-3982-46d0-85d4-0dc666e0fe0c" />
+<img width="736" height="385" alt="image" src="https://github.com/user-attachments/assets/4825ad4f-3431-48a6-a55d-6efb72d5b13c" />
+<img width="769" height="507" alt="image" src="https://github.com/user-attachments/assets/11cabc8e-6414-444d-9d2f-6c7700162f05" />
+<img width="700" height="440" alt="image" src="https://github.com/user-attachments/assets/b295cd80-4de4-4e2f-8136-319758260180" />
 
-<img width="921" height="680" alt="image" src="https://github.com/user-attachments/assets/b0cc2fd7-84e8-48aa-92f4-4929fd79fffc" />
+
+
+
+
 
