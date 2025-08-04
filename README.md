@@ -1,4 +1,4 @@
-# pleSecureDoc
+# SecureLock
 
 pleSecureDoc is a secure document approval system for organizations, built with ASP.NET MVC. It allows employees to request documents and employers to approve them via email within a time-bound window. Final confirmation uses face recognition for identity verification.
 
