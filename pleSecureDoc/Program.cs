@@ -1,4 +1,4 @@
-﻿// Program.cs
+// Program.cs
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -14,7 +14,9 @@ builder.Services.AddSingleton<FaceRecognitionService>();
 
 var app = builder.Build();
 
-// ✅ Create Person Group on startup
+// ❌ Temporarily commented out to bypass network error
+// The face group will not be created automatically.
+/*
 using (var scope = app.Services.CreateScope())
 {
     var faceService = scope.ServiceProvider.GetRequiredService<FaceRecognitionService>();
@@ -28,6 +30,7 @@ using (var scope = app.Services.CreateScope())
         Console.WriteLine($"❌ Failed to create person group: {ex.Message}");
     }
 }
+*/
 
 if (!app.Environment.IsDevelopment())
 {
