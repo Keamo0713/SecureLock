@@ -27,3 +27,5 @@ pleSecureDoc is a secure document approval system for organizations, built with 
 - Gmail account with "less secure apps" access enabled (or App Password)
 
 
+<img width="921" height="680" alt="image" src="https://github.com/user-attachments/assets/b0cc2fd7-84e8-48aa-92f4-4929fd79fffc" />
+
