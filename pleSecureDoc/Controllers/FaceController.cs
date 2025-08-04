@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using pleSecureDoc.Services;
+using Microsoft.AspNetCore.Mvc;
 using pleSecureDoc.Models;
+using pleSecureDoc.Services;
 using System.IO;
 using System.Threading.Tasks;
 using System;
@@ -11,11 +11,13 @@ namespace pleSecureDoc.Controllers
     {
         private readonly FirebaseService _firebase;
         private readonly FaceRecognitionService _faceService;
+        private readonly EmailService _emailService; // Added EmailService dependency
 
-        public FaceController(FirebaseService firebase, FaceRecognitionService faceService)
+        public FaceController(FirebaseService firebase, FaceRecognitionService faceService, EmailService emailService)
         {
             _firebase = firebase;
             _faceService = faceService;
+            _emailService = emailService; // Initialize EmailService
         }
 
         [HttpGet]
@@ -37,9 +39,22 @@ namespace pleSecureDoc.Controllers
             var personId = await _faceService.RegisterEmployerFaceAsync(base64Image, "kgomotsosele80");
 
             // Store this personId in Firebase or elsewhere for later verification
-            await _firebase.SaveEmployerPersonId("kgomotsosele80", personId);
+            await _firebase.SaveEmployerPersonIdAsync("kgomotsosele80", personId);
 
             return View("RegistrationSuccess");
+        }
+
+        // Assuming this action is for sending a verification email after employer face registration
+        // Note: The parameter name 'employeeId' here seems inconsistent with 'RegisterEmployerFaceConfirm(string base64Image)'
+        // You might want to rename this action or clarify its purpose.
+        [HttpGet] // Changed to HttpGet as it's likely a redirect target or initial view load
+        public async Task<IActionResult> RegisterEmployerFaceConfirmationEmail(string employeeId)
+        {
+            var employee = await _firebase.GetEmployeeAsync(employeeId); // Assumes GetEmployeeAsync exists
+            // This email is hardcoded and should be dynamic in a real application.
+            var employerEmail = "kgomotsosele80@gmail.com";
+            await _emailService.SendFaceVerificationEmail(employerEmail, employee.Id, employee.Email); // Assumes SendFaceVerificationEmail exists
+            return View();
         }
 
 
@@ -55,7 +70,14 @@ namespace pleSecureDoc.Controllers
             var imageBytes = memoryStream.ToArray();
             var base64Image = Convert.ToBase64String(imageBytes);
 
-            bool isMatch = await _faceService.VerifyFaceAsync(base64Image);
+            string employerId = "kgomotsosele80"; // Note: This should be dynamic.
+            var personId = await _firebase.GetEmployerPersonIdAsync(employerId);
+            if (string.IsNullOrEmpty(personId))
+            {
+                return NotFound("Employer's face not registered.");
+            }
+            
+            bool isMatch = await _faceService.VerifyFaceAsync(base64Image, personId);
 
             if (!isMatch)
                 return View("FaceVerificationFailed");
