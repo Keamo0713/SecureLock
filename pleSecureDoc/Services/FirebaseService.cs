@@ -1,4 +1,4 @@
-﻿using Firebase.Database;
+using Firebase.Database;
 using Firebase.Database.Query;
 using Microsoft.Extensions.Configuration;
 using pleSecureDoc.Models;
@@ -13,8 +13,8 @@ namespace pleSecureDoc.Services
 
         public FirebaseService(IConfiguration config)
         {
-            var url = config["Firebase:DatabaseUrl"];
-            var secret = config["Firebase:Secret"];
+            var url = config["Firebase:DatabaseUrl"] ?? throw new ArgumentNullException("Firebase:DatabaseUrl is not configured.");
+            var secret = config["Firebase:Secret"] ?? throw new ArgumentNullException("Firebase:Secret is not configured.");
             _client = new FirebaseClient(url, new FirebaseOptions
             {
                 AuthTokenAsyncFactory = () => Task.FromResult(secret)
@@ -40,9 +40,17 @@ namespace pleSecureDoc.Services
         public async Task ApproveRequest(string requestId)
         {
             var request = await GetRequest(requestId);
-            request.IsApproved = true;
-            request.ApprovalTime = DateTime.UtcNow;
-            await LogRequest(request);
+            if (request != null) // Add null check
+            {
+                request.IsApproved = true;
+                request.ApprovalTime = DateTime.UtcNow;
+                await LogRequest(request);
+            }
+            else
+            {
+                // Handle case where request is not found
+                Console.WriteLine($"Error: Request with ID {requestId} not found for approval.");
+            }
         }
 
         // 🔹 Save employer's personId
@@ -61,6 +69,15 @@ namespace pleSecureDoc.Services
                 .Child("personIds")
                 .Child(employerId)
                 .OnceSingleAsync<string>();
+        }
+
+        // 🔹 Get Employee by Id (New method to fix CS1061 error)
+        public async Task<Employee> GetEmployeeAsync(string employeeId)
+        {
+            return await _client
+                .Child("employees")
+                .Child(employeeId)
+                .OnceSingleAsync<Employee>();
         }
     }
 }
